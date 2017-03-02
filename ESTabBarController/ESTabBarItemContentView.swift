@@ -27,82 +27,87 @@ import UIKit
 
 public class ESTabBarItemContentView: UIView {
     
+    // MARK: - PROPERTY SETTING
+    
     /// 设置contentView的偏移
-    public var insets: UIEdgeInsets = UIEdgeInsetsZero
-    /// 当前是否被选中
-    public var selected: Bool = false
-    /// 当前是否高亮
-    public var highlighted: Bool = false
+    public var insets = UIEdgeInsetsZero
+    
+    /// 是否被选中
+    public var selected = false
+    
+    /// 是否处于高亮状态
+    public var highlighted = false
+    
     /// 是否支持高亮
-    public var highlightEnabled: Bool = true
-
-    public var textColor = UIColor(white: 146.0 / 255.0, alpha: 1.0) {
+    public var highlightEnabled = true
+    
+    /// 文字颜色
+    public var textColor = UIColor(white: 0.57254902, alpha: 1.0) {
         didSet {
-            if !selected {
-                titleLabel.textColor = textColor
-            }
-        }
-    }
-    public var highlightTextColor = UIColor(red: 0.0 / 255.0, green: 122.0 / 255.0, blue: 255.0 / 255.0, alpha: 1.0) {
-        didSet {
-            if selected {
-                titleLabel.textColor = highlightIconColor
-            }
-        }
-    }
-    public var iconColor = UIColor(white: 146.0 / 255.0, alpha: 1.0) {
-        didSet {
-            if !selected {
-                imageView.tintColor = iconColor
-            }
-        }
-    }
-    public var highlightIconColor = UIColor(red: 0.0 / 255.0, green: 122.0 / 255.0, blue: 255.0 / 255.0, alpha: 1.0) {
-        didSet {
-            if selected {
-                imageView.tintColor = highlightIconColor
-            }
-        }
-    }
-    public var backdropColor = UIColor.clearColor(){
-        didSet {
-            if !selected {
-                backgroundColor = backdropColor
-            }
-        }
-    }
-    public var highlightBackdropColor = UIColor.clearColor() {
-        didSet {
-            if selected {
-                backgroundColor = highlightBackdropColor
-            }
+            if !selected { titleLabel.textColor = textColor }
         }
     }
     
+    /// 高亮时文字颜色
+    public var highlightTextColor = UIColor(red: 0.0, green: 0.47843137, blue: 1.0, alpha: 1.0) {
+        didSet {
+            if selected { titleLabel.textColor = highlightIconColor }
+        }
+    }
+    
+    /// icon颜色
+    public var iconColor = UIColor(white: 0.57254902, alpha: 1.0) {
+        didSet {
+            if !selected { imageView.tintColor = iconColor }
+        }
+    }
+    
+    /// 高亮时icon颜色
+    public var highlightIconColor = UIColor(red: 0.0, green: 0.47843137, blue: 1.0, alpha: 1.0) {
+        didSet {
+            if selected { imageView.tintColor = highlightIconColor }
+        }
+    }
+    
+    /// 背景颜色
+    public var backdropColor = UIColor.clearColor() {
+        didSet {
+            if !selected { backgroundColor = backdropColor }
+        }
+    }
+    
+    /// 高亮时背景颜色
+    public var highlightBackdropColor = UIColor.clearColor() {
+        didSet {
+            if selected { backgroundColor = highlightBackdropColor }
+        }
+    }
+    
+    public var title: String? {
+        didSet {
+            self.titleLabel.text = title
+            self.updateLayout()
+        }
+    }
+    
+    /// Icon imageView renderingMode, default is .alwaysTemplate like UITabBarItem
+    public var renderingMode: UIImageRenderingMode = .AlwaysTemplate {
+        didSet {
+            self.updateDisplay()
+        }
+    }
+    
+    
+    /// Icon imageView's image
     public var image: UIImage? {
         didSet {
-            if !selected {
-                self.imageView.image = image?.imageWithRenderingMode(.AlwaysOriginal)
-                self.imageView.tintColor = iconColor
-                self.updateLayout()
-            }
+            if !selected { self.updateDisplay() }
         }
     }
     
     public var selectedImage: UIImage? {
         didSet {
-            if selected {
-                self.imageView.image = selectedImage?.imageWithRenderingMode(.AlwaysOriginal) ?? image?.imageWithRenderingMode(.AlwaysOriginal)
-                self.imageView.tintColor = highlightIconColor
-                self.updateLayout()
-            }
-        }
-    }
-
-    public var title: String? {
-        didSet {
-            self.titleLabel.text = title
-            self.updateLayout()
+            if selected { self.updateDisplay() }
         }
     }
     
@@ -114,8 +119,8 @@ public class ESTabBarItemContentView: UIView {
     
     public var titleLabel: UILabel = {
         let titleLabel = UILabel.init(frame: CGRect.zero)
-        titleLabel.backgroundColor = UIColor.clearColor()
-        titleLabel.textColor = UIColor.clearColor()
+        titleLabel.backgroundColor = .clearColor()
+        titleLabel.textColor = .clearColor()
         titleLabel.font = UIFont.systemFontOfSize(10)
         titleLabel.textAlignment = .Center
         return titleLabel
@@ -165,7 +170,7 @@ public class ESTabBarItemContentView: UIView {
         }
     }
     
-
+    // MARK: -
     public override init(frame: CGRect) {
         super.init(frame: frame)
         self.userInteractionEnabled = false
@@ -181,19 +186,12 @@ public class ESTabBarItemContentView: UIView {
     public required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-
+    
     public func updateDisplay() {
-        if selected {
-            backgroundColor = highlightBackdropColor
-            imageView.image = selectedImage?.imageWithRenderingMode(.AlwaysOriginal) ?? image?.imageWithRenderingMode(.AlwaysOriginal)
-            imageView.tintColor = highlightIconColor
-            titleLabel.textColor = highlightTextColor
-        } else {
-            backgroundColor = backdropColor
-            imageView.image = image?.imageWithRenderingMode(.AlwaysOriginal)
-            imageView.tintColor = iconColor
-            titleLabel.textColor = textColor
-        }
+        imageView.image = (selected ? (selectedImage ?? image) : image)?.imageWithRenderingMode(renderingMode)
+        imageView.tintColor = selected ? highlightIconColor : iconColor
+        titleLabel.textColor = selected ? highlightTextColor : textColor
+        backgroundColor = selected ? highlightBackdropColor : backdropColor
     }
     
     public func updateLayout() {
@@ -206,11 +204,11 @@ public class ESTabBarItemContentView: UIView {
             titleLabel.sizeToFit()
             imageView.sizeToFit()
             titleLabel.frame = CGRect.init(x: (w - titleLabel.bounds.size.width) / 2.0,
-                                           y: h - titleLabel.bounds.size.height - 4.0,
+                                           y: h - titleLabel.bounds.size.height - 1.0,
                                            width: titleLabel.bounds.size.width,
                                            height: titleLabel.bounds.size.height)
             imageView.frame = CGRect.init(x: (w - imageView.bounds.size.width) / 2.0,
-                                          y: (h - imageView.bounds.size.height) / 2.0 - 12.0,
+                                          y: (h - imageView.bounds.size.height) / 2.0 - 6.0,
                                           width: imageView.bounds.size.width,
                                           height: imageView.bounds.size.height)
         } else if !imageView.hidden {
@@ -226,7 +224,8 @@ public class ESTabBarItemContentView: UIView {
             badgeView.frame = CGRect.init(origin: CGPoint.init(x: w / 2.0 + badgeOffset.horizontal, y: h / 2.0 + badgeOffset.vertical), size: size)
         }
     }
-
+    
+    // MARK: - INTERNAL METHODS
     internal final func select(animated: Bool, completion: (() -> ())?) {
         selected = true
         if highlightEnabled && highlighted {
@@ -234,7 +233,7 @@ public class ESTabBarItemContentView: UIView {
             dehighlightAnimation(animated, completion: { [weak self] in
                 self?.updateDisplay()
                 self?.selectAnimation(animated, completion: completion)
-            })
+                })
         } else {
             updateDisplay()
             selectAnimation(animated, completion: completion)
@@ -255,7 +254,7 @@ public class ESTabBarItemContentView: UIView {
                 highlighted = false
                 dehighlightAnimation(animated, completion: { [weak self] in
                     self?.reselectAnimation(animated, completion: completion)
-                })
+                    })
             } else {
                 reselectAnimation(animated, completion: completion)
             }
@@ -288,6 +287,7 @@ public class ESTabBarItemContentView: UIView {
         self.badgeChangedAnimation(animated, completion: completion)
     }
     
+    // MARK: - ANIMATION METHODS
     public func selectAnimation(animated: Bool, completion: (() -> ())?) {
         completion?()
     }
