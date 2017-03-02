@@ -49,6 +49,12 @@ public class ESTabBarItemBadgeView: UIView {
         }
     }
     
+    public var textWidthIncrease: CGFloat = 10 {
+        didSet {
+            self.sizeThatFits(self.bounds.size)
+        }
+    }
+    
     /// Badge value, supprot nil, "", "1", "someText". Hidden when nil. Show Little dot style when "".
     public var badgeValue: String? {
         didSet {
@@ -117,7 +123,7 @@ public class ESTabBarItemBadgeView: UIView {
             return badgeSize
         }
         let textSize = badgeLabel.sizeThatFits(CGSize.init(width: CGFloat.max, height: CGFloat.max))
-        return CGSize.init(width: max(badgeSize.width, textSize.width + 10.0), height: badgeSize.height)
+        return CGSize.init(width: max(badgeSize.width, textSize.width + textWidthIncrease), height: badgeSize.height)
     }
     
 }
