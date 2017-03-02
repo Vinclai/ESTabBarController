@@ -97,6 +97,20 @@ public class ESTabBarItemContentView: UIView {
         }
     }
     
+    /// ImageView bottom offset
+    public var imageViewBottomOffset: CGFloat = 6 {
+        didSet {
+            self.updateDisplay()
+        }
+    }
+    
+    /// TitleLabel bottom offset
+    public var titleLabelBottomOffset: CGFloat = 1 {
+        didSet {
+            self.updateDisplay()
+        }
+    }
+    
     
     /// Icon imageView's image
     public var image: UIImage? {
@@ -204,11 +218,11 @@ public class ESTabBarItemContentView: UIView {
             titleLabel.sizeToFit()
             imageView.sizeToFit()
             titleLabel.frame = CGRect.init(x: (w - titleLabel.bounds.size.width) / 2.0,
-                                           y: h - titleLabel.bounds.size.height - 1.0,
+                                           y: h - titleLabel.bounds.size.height - titleLabelBottomOffset,
                                            width: titleLabel.bounds.size.width,
                                            height: titleLabel.bounds.size.height)
             imageView.frame = CGRect.init(x: (w - imageView.bounds.size.width) / 2.0,
-                                          y: (h - imageView.bounds.size.height) / 2.0 - 6.0,
+                                          y: (h - imageView.bounds.size.height) / 2.0 - imageViewBottomOffset,
                                           width: imageView.bounds.size.width,
                                           height: imageView.bounds.size.height)
         } else if !imageView.hidden {
