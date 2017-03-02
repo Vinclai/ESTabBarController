@@ -1,8 +1,8 @@
 //
-//  ESTabBarItem.swift
+//  ESTabBarController.swift
 //
-//  Created by egg swift on 16/4/7.
-//  Copyright (c) 2013-2016 ESPullToRefresh (https://github.com/eggswift/ESTabBarController)
+//  Created by Vincent Li on 2017/2/8.
+//  Copyright (c) 2013-2016 ESTabBarController (https://github.com/eggswift/ESTabBarController)
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -22,104 +22,86 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 //
-/*
- *  ESTabBarItem 自定义可动画TabBarItem类
- *  为TabBarItem添加是否允许选中属性
- *  不需要再实现 shouldSelectViewController 方法
- */
 
-import Foundation
 import UIKit
 
+/*
+ * ESTabBarItem继承自UITabBarItem，目的是为ESTabBarItemContentView提供UITabBarItem属性的设置。
+ * 目前支持大多常用的属性，例如image, selectedImage, title, tag 等。
+ *
+ * Unsupport properties:
+ *  MARK: UIBarItem properties
+ *      1. var isEnabled: Bool
+ *      2. var landscapeImagePhone: UIImage?
+ *      3. var imageInsets: UIEdgeInsets
+ *      4.  var landscapeImagePhoneInsets: UIEdgeInsets
+ *      5. func setTitleTextAttributes(_ attributes: [String : Any]?, for state: UIControlState)
+ *      6. func titleTextAttributes(for state: UIControlState) -> [String : Any]?
+ *  MARK: UITabBarItem properties
+ *      7. var titlePositionAdjustment: UIOffset
+ *      8. func setBadgeTextAttributes(_ textAttributes: [String : Any]?, for state: UIControlState)
+ *      9. func badgeTextAttributes(for state: UIControlState) -> [String : Any]?
+ */
+@available(iOS 8.0, *)
 public class ESTabBarItem: UITabBarItem {
     
-    public weak var tabBarController: ESTabBarController?
-    public var index: Int = 0
-    public var content: ESTabBarItemContent?
-    public var badge: ESTabBarBadge?
+    /// Customize content view
+    public var contentView: ESTabBarItemContentView?
     
-    // 重写系统的setImage: 和setTitle 方法 使其作用于自定义的container上
-    public override var image: UIImage? {
-        set { self.content?.image = newValue }
-        get { return nil }
-    }
-    public override var selectedImage: UIImage? {
-        set { self.content?.selectedImage = newValue }
-        get { return nil }
-    }
-    public override var title: String? {
-        set { self.content?.title = newValue }
-        get { return nil }
-    }
-
-    public convenience init(animator: ESTabBarItemAnimatorProtocol) {
-        self.init()
-        let content = ESTabBarItemContent.init(animator: animator)
-        content.item = self
-        self.content = content
-        self.content?.deselect(animated: false, completion: nil)
+    // MARK: UIBarItem properties
+    public override var title: String? // default is nil
+        {
+        didSet { self.contentView?.title = title }
     }
     
-    public convenience init(content: ESTabBarItemContent?) {
-        self.init()
-        self.content = content
-        self.content?.item = self
-        self.content?.deselect(animated: false, completion: nil)
+    public override var image: UIImage? // default is nil
+        {
+        didSet { self.contentView?.image = image }
     }
     
-    public func select(animated animated: Bool, completion: (() -> ())?){
-        content?.select(animated: animated, completion: completion)
+    // MARK: UITabBarItem properties
+    public override var selectedImage: UIImage? // default is nil
+        {
+        didSet { self.contentView?.selectedImage = selectedImage }
     }
     
-    public func reselect(animated animated: Bool, completion: (() -> ())?){
-        content?.reselect(animated: animated, completion: completion)
+    public override var badgeValue: String? // default is nil
+        {
+        get { return contentView?.badgeValue }
+        set(newValue) { contentView?.badgeValue = newValue }
     }
     
-    public func deselect(animated animated: Bool, completion: (() -> ())?){
-        content?.deselect(animated: animated, completion: completion)
+    /// Override UITabBarItem.badgeColor, make it available for iOS8.0 and later.
+    /// If this item displays a badge, this color will be used for the badge's background. If set to nil, the default background color will be used instead.
+    @available(iOS 8.0, *)
+    public override var badgeColor: UIColor? {
+        get { return contentView?.badgeColor }
+        set(newValue) { contentView?.badgeColor = newValue }
     }
     
-    public func highlight(highlight highlight: Bool, animated: Bool, completion: (() -> ())?){
-        content?.highlight(highlight: highlight, animated: animated, completion: completion)
+    public override var tag: Int // default is 0
+        {
+        didSet { self.contentView?.tag = tag }
     }
-
-
-}
-
-
-extension ESTabBarItem /* BadgeExtension */ {
     
-    /// Support value: nil or "" or "xx", 
-    /// if value > 99, set "99+"
-    /// if value > "xx...", set "xx."
-    override public var badgeValue: String? {
-        get {
-            return badge?.badgeValue ?? nil
-        }
-        set(newValue) {
-            self.content?.badgeValue = newValue
-        }
+    /* The unselected image is autogenerated from the image argument. The selected image
+     is autogenerated from the selectedImage if provided and the image argument otherwise.
+     To prevent system coloring, provide images with UIImageRenderingModeAlwaysOriginal (see UIImage.h)
+     */
+    public init(_ contentView: ESTabBarItemContentView = ESTabBarItemContentView(), title: String? = nil, image: UIImage? = nil, selectedImage: UIImage? = nil, tag: Int = 0) {
+        super.init()
+        self.contentView = contentView
+        self.setTitle(title, image: image, selectedImage: selectedImage, tag: tag)
     }
-
-}
-
-private var kSelectEnabledAssociateKey: String = ""
-extension UITabBarItem {
-    var selectEnabled: Bool? {
-        get {
-            let obj = (objc_getAssociatedObject(self, &kSelectEnabledAssociateKey) as? NSNumber)
-            return obj?.boolValue
-        }
-        set(newValue) {
-            if let newValue = newValue {
-                objc_setAssociatedObject(self, &kSelectEnabledAssociateKey, NSNumber.init(bool: newValue), objc_AssociationPolicy.OBJC_ASSOCIATION_RETAIN)
-            }
-        }
+    required public init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
-}
-
-extension NSObjectProtocol where Self: UITabBarControllerDelegate {
-    func tabBarController(tabBarcontroller: UITabBarController?, shouldSelectViewController viewController: UIViewController) -> Bool {
-        return viewController.tabBarItem.selectEnabled ?? true
+    
+    public func setTitle(_ title: String? = nil, image: UIImage? = nil, selectedImage: UIImage? = nil, tag: Int = 0) {
+        self.title = title
+        self.image = image
+        self.selectedImage = selectedImage
+        self.tag = tag
     }
+    
 }
