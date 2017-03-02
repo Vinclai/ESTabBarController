@@ -94,7 +94,7 @@ public class ESTabBarItemContent: UIView {
         return titleLabel
     }()
     
-    override init(frame: CGRect) {
+    public override init(frame: CGRect) {
         super.init(frame: frame)
         userInteractionEnabled = false
         animator = ESTabBarItemAnimator.init()
