@@ -125,6 +125,24 @@ public class ESTabBarItemContentView: UIView {
         }
     }
     
+    public var lefImage: UIImage? {
+        didSet {
+            self.updateDisplay()
+        }
+    }
+    
+    public var rightImage: UIImage? {
+        didSet {
+            self.updateDisplay()
+        }
+    }
+    
+    public var sideImagesOffset: CGFloat = 5 {
+        didSet {
+            self.updateLayout()
+        }
+    }
+    
     public var imageView: UIImageView = {
         let imageView = UIImageView.init(frame: CGRect.zero)
         imageView.backgroundColor = UIColor.clearColor()
@@ -140,6 +158,17 @@ public class ESTabBarItemContentView: UIView {
         return titleLabel
     }()
     
+    public var leftSideImage: UIImageView = {
+        let imageView = UIImageView.init(frame: CGRect.zero)
+        imageView.backgroundColor = .clearColor()
+        return imageView
+    }()
+    
+    public var rightSideImage: UIImageView = {
+        let imageView = UIImageView.init(frame: CGRect.zero)
+        imageView.backgroundColor = .clearColor()
+        return imageView
+    }()
     
     /// 小红点相关属性
     public var badgeValue: String? {
@@ -191,6 +220,8 @@ public class ESTabBarItemContentView: UIView {
         
         addSubview(imageView)
         addSubview(titleLabel)
+        addSubview(leftSideImage)
+        addSubview(rightSideImage)
         
         titleLabel.textColor = textColor
         imageView.tintColor = iconColor
@@ -204,6 +235,10 @@ public class ESTabBarItemContentView: UIView {
     public func updateDisplay() {
         imageView.image = (selected ? (selectedImage ?? image) : image)?.imageWithRenderingMode(renderingMode)
         imageView.tintColor = selected ? highlightIconColor : iconColor
+        leftSideImage.image = lefImage?.imageWithRenderingMode(.AlwaysOriginal)
+        leftSideImage.hidden = !selected
+        rightSideImage.image = rightImage?.imageWithRenderingMode(.AlwaysOriginal)
+        rightSideImage.hidden = !selected
         titleLabel.textColor = selected ? highlightTextColor : textColor
         backgroundColor = selected ? highlightBackdropColor : backdropColor
     }
@@ -217,21 +252,32 @@ public class ESTabBarItemContentView: UIView {
         if !imageView.hidden && !titleLabel.hidden {
             titleLabel.sizeToFit()
             imageView.sizeToFit()
-            titleLabel.frame = CGRect.init(x: (w - titleLabel.bounds.size.width) / 2.0,
+            titleLabel.frame = CGRect(x: (w - titleLabel.bounds.size.width) / 2.0,
                                            y: h - titleLabel.bounds.size.height - titleLabelBottomOffset,
                                            width: titleLabel.bounds.size.width,
                                            height: titleLabel.bounds.size.height)
-            imageView.frame = CGRect.init(x: (w - imageView.bounds.size.width) / 2.0,
+            imageView.frame = CGRect(x: (w - imageView.bounds.size.width) / 2.0,
                                           y: (h - imageView.bounds.size.height) / 2.0 - imageViewBottomOffset,
                                           width: imageView.bounds.size.width,
                                           height: imageView.bounds.size.height)
         } else if !imageView.hidden {
             imageView.sizeToFit()
-            imageView.center = CGPoint.init(x: w / 2.0, y: h / 2.0)
+            imageView.center = CGPoint(x: w / 2.0, y: h / 2.0)
         } else if !titleLabel.hidden {
             titleLabel.sizeToFit()
-            titleLabel.center = CGPoint.init(x: w / 2.0, y: h / 2.0)
+            titleLabel.center = CGPoint(x: w / 2.0, y: h / 2.0)
         }
+        
+        leftSideImage.sizeToFit()
+        leftSideImage.frame = CGRect(x: self.bounds.minX + sideImagesOffset,
+                                          y: (h - leftSideImage.bounds.size.height) / 2.0,
+                                          width: leftSideImage.bounds.size.width,
+                                          height: leftSideImage.bounds.size.height)
+        rightSideImage.sizeToFit()
+        rightSideImage.frame = CGRect(x: self.bounds.maxX - rightSideImage.bounds.size.width - sideImagesOffset,
+                                           y: (h - rightSideImage.bounds.size.height) / 2.0,
+                                           width: rightSideImage.bounds.size.width,
+                                           height: rightSideImage.bounds.size.height)
         
         if let _ = badgeView.superview {
             let size = badgeView.sizeThatFits(self.frame.size)
