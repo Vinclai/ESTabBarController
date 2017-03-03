@@ -49,6 +49,12 @@ public class ESTabBarItemBadgeView: UIView {
         }
     }
     
+    public var badgeLabelBottomOffset: CGFloat = 0 {
+        didSet {
+            layoutSubviews()
+        }
+    }
+    
     public var textWidthIncrease: CGFloat = 10 {
         didSet {
             self.sizeThatFits(self.bounds.size)
@@ -111,7 +117,7 @@ public class ESTabBarItemBadgeView: UIView {
         }
         imageView.layer.cornerRadius = imageView.bounds.size.height / 2.0
         badgeLabel.sizeToFit()
-        badgeLabel.center = imageView.center
+        badgeLabel.center = CGPoint(x: badgeLabel.center.x, y: badgeLabel.center.y - badgeLabelBottomOffset)
     }
     
     /*
