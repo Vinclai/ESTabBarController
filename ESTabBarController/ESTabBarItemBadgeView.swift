@@ -117,7 +117,7 @@ public class ESTabBarItemBadgeView: UIView {
         }
         imageView.layer.cornerRadius = imageView.bounds.size.height / 2.0
         badgeLabel.sizeToFit()
-        badgeLabel.center = CGPoint(x: badgeLabel.center.x, y: badgeLabel.center.y - badgeLabelBottomOffset)
+        badgeLabel.center = CGPoint(x: imageView.center.x, y: imageView.center.y - badgeLabelBottomOffset)
     }
     
     /*
